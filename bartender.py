@@ -1,12 +1,16 @@
-import gaugette.ssd1306
-import gaugette.platform
-import gaugette.gpio
 import time
 import sys
 import RPi.GPIO as GPIO
 import json
 import threading
 import traceback
+
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_SSD1306
+
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
 
 from dotstar import Adafruit_DotStar
 from menu import MenuItem, Menu, Back, MenuContext, MenuDelegate
@@ -31,7 +35,15 @@ NEOPIXEL_DATA_PIN = 26
 NEOPIXEL_CLOCK_PIN = 6
 NEOPIXEL_BRIGHTNESS = 64
 
-FLOW_RATE = 60.0/100.0
+FLOW_RATE = 60.0/1500.0
+
+# Raspberry Pi pin configuration:
+RST = 14
+# Note the following are only used with SPI:
+DC = 15
+SPI_PORT = 0
+SPI_DEVICE = 0
+
 
 class Bartender(MenuDelegate): 
 	def __init__(self):
@@ -51,18 +63,27 @@ class Bartender(MenuDelegate):
 		# configure screen
 		spi_bus = 0
 		spi_device = 0
-		gpio = gaugette.gpio.GPIO()
-		spi = gaugette.spi.SPI(spi_bus, spi_device)
 
 		# Very important... This lets py-gaugette 'know' what pins to use in order to reset the display
-		self.led = gaugette.ssd1306.SSD1306(gpio, spi, reset_pin=OLED_RESET_PIN, dc_pin=OLED_DC_PIN, rows=self.screen_height, cols=self.screen_width) # Change rows & cols values depending on your display dimensions.
+		self.led = disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, dc=DC, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE, max_speed_hz=8000000)) # Change rows & cols values depending on your display dimensions.
+		
+		# Initialize library.
 		self.led.begin()
-		self.led.clear_display()
+
+		# Clear display.
+		self.led.clear()
 		self.led.display()
-		self.led.invert_display()
-		time.sleep(0.5)
-		self.led.normal_display()
-		time.sleep(0.5)
+
+
+		# Create image buffer.
+		# Make sure to create image with mode '1' for 1-bit color.
+		self.image = Image.new('1', (self.screen_width, self.screen_height))
+
+		# Load default font.
+		self.font = ImageFont.load_default()
+
+		# Create drawing object.
+		self.draw = ImageDraw.Draw(self.image)
 
 		# load the pump configuration from file
 		self.pump_configuration = Bartender.readPumpConfiguration()
@@ -226,8 +247,10 @@ class Bartender(MenuDelegate):
 
 	def displayMenuItem(self, menuItem):
 		print menuItem.name
-		self.led.clear_display()
-		self.led.draw_text2(0,20,menuItem.name,2)
+		self.led.clear()
+		self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
+		self.draw.text((0,20),str(menuItem.name), font=self.font, fill=255)
+		self.led.image(self.image)
 		self.led.display()
 
 	def cycleLights(self):
@@ -272,8 +295,10 @@ class Bartender(MenuDelegate):
 	def progressBar(self, waitTime):
 		interval = waitTime / 100.0
 		for x in range(1, 101):
-			self.led.clear_display()
+			self.led.clear()
+			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
 			self.updateProgressBar(x, y=35)
+			self.led.image(self.image)
 			self.led.display()
 			time.sleep(interval)
 
@@ -338,14 +363,14 @@ class Bartender(MenuDelegate):
 		height = 10
 		width = self.screen_width-2*x
 		for w in range(0, width):
-			self.led.draw_pixel(w + x, y)
-			self.led.draw_pixel(w + x, y + height)
+			self.draw.point((w + x, y), fill=255)
+			self.draw.point((w + x, y + height), fill=255)
 		for h in range(0, height):
-			self.led.draw_pixel(x, h + y)
-			self.led.draw_pixel(self.screen_width-x, h + y)
+			self.draw.point((x, h + y), fill=255)
+			self.draw.point((self.screen_width-x, h + y), fill=255)
 			for p in range(0, percent):
 				p_loc = int(p/100.0*width)
-				self.led.draw_pixel(x + p_loc, h + y)
+				self.draw.point((x + p_loc, h + y), fill=255)
 
 	def run(self):
 		self.startInterrupts()
@@ -364,7 +389,3 @@ class Bartender(MenuDelegate):
 bartender = Bartender()
 bartender.buildMenu(drink_list, drink_options)
 bartender.run()
-
-
-
-

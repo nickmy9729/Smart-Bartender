@@ -53,11 +53,6 @@ cd Adafruit_Python_SSD1306
 sudo python setup.py install
 ```
 
-The Raspberry Pi Guy has a nice script to setup the OLED screen on your raspberry pi. Download the following repository on your Pi:
-
-https://github.com/the-raspberry-pi-guy/OLED
-
-
 There is also a [guide](https://learn.adafruit.com/ssd1306-oled-displays-with-raspberry-pi-and-beaglebone-black/usage) on the Adafruit website if you get stuck.
 
 ## Running the Code

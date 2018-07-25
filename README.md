@@ -1,8 +1,6 @@
-# Smart Bartender
+# Smart Bartender with Adafruit SSD1306
 Why spend lots of money going out for drinks when you can have your own smart personal bartender at your service right in your home?! This bartender is built from a Raspberry Pi 3 and some common DIY electronics.
 
-## Prerequisites for the Raspberry Pi
-Make sure you can connect a screen and keyboard to your Raspberry Pi. I like to use VNC to connect to the Pi. I created a [tutorial](https://www.youtube.com/watch?v=2iVK8dn-6x4) about how to set that up on a Mac.
 
 Make sure the following are installed:
 * Python 2.7 (should already be installed on most Raspberry Pi)
@@ -38,23 +36,29 @@ i2c-dev
 press `esc` then `ZZ` to save and exit.
 
 ## OLED Setup
+
+You need to install the Adafruit Python SSD1306 library with
+
+```
+sudo python -m pip install --upgrade pip setuptools wheel
+sudo pip install Adafruit-SSD1306
+```
+
+Or alternatively:
+
+```
+sudo python -m pip install --upgrade pip setuptools wheel
+git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
+cd Adafruit_Python_SSD1306
+sudo python setup.py install
+```
+
 The Raspberry Pi Guy has a nice script to setup the OLED screen on your raspberry pi. Download the following repository on your Pi:
 
 https://github.com/the-raspberry-pi-guy/OLED
 
-then navigate to the folder with the terminal
 
-```
-cd ~/path/to/directory
-```
-
-and run the installation script
-
-```
-sh OLEDinstall.sh
-```
-
-There is also a [guide](https://learn.adafruit.com/adafruit-oled-displays-for-raspberry-pi/setting-up) on the Adafruit website if you get stuck.
+There is also a [guide](https://learn.adafruit.com/ssd1306-oled-displays-with-raspberry-pi-and-beaglebone-black/usage) on the Adafruit website if you get stuck.
 
 ## Running the Code
 

@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+
 import time
 import sys
 import RPi.GPIO as GPIO
 import json
-import threading
 import traceback
 
 import Adafruit_GPIO.SPI as SPI
@@ -22,10 +24,10 @@ SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 64
 
 LEFT_BTN_PIN = 13
-LEFT_PIN_BOUNCE = 1000
+LEFT_PIN_BOUNCE = 200
 
 RIGHT_BTN_PIN = 5
-RIGHT_PIN_BOUNCE = 2000
+RIGHT_PIN_BOUNCE = 200
 
 OLED_RESET_PIN = 15
 OLED_DC_PIN = 16
@@ -120,10 +122,6 @@ class Bartender(MenuDelegate):
 		GPIO.add_event_detect(self.btn1Pin, GPIO.FALLING, callback=self.left_btn, bouncetime=LEFT_PIN_BOUNCE)  
 		GPIO.add_event_detect(self.btn2Pin, GPIO.FALLING, callback=self.right_btn, bouncetime=RIGHT_PIN_BOUNCE)  
 
-	def stopInterrupts(self):
-		GPIO.remove_event_detect(self.btn1Pin)
-		GPIO.remove_event_detect(self.btn2Pin)
-
 	def buildMenu(self, drink_list, drink_options):
 		# create a new main menu
 		m = Menu("Main Menu")
@@ -152,7 +150,7 @@ class Bartender(MenuDelegate):
 		# add pump menus to the configuration menu
 		configuration_menu.addOptions(pump_opts)
 		# add a back button to the configuration menu
-		configuration_menu.addOption(Back("Back"))
+		configuration_menu.addOption(Back("Zurück"))
 		# adds an option that cleans all pumps to the configuration menu
 		configuration_menu.addOption(MenuItem('clean', 'Clean'))
 		configuration_menu.setParent(m)
@@ -241,9 +239,6 @@ class Bartender(MenuDelegate):
 		# sleep for a couple seconds to make sure the interrupts don't get triggered
 		time.sleep(2);
 
-		# reenable interrupts
-		# self.startInterrupts()
-		self.running = False
 
 	def displayMenuItem(self, menuItem):
 		print menuItem.name
@@ -352,12 +347,21 @@ class Bartender(MenuDelegate):
 		self.running = False
 
 	def left_btn(self, ctx):
+		print("LEFT_BTN pressed")
 		if not self.running:
+			self.running = True
 			self.menuContext.advance()
+			print("Finished processing button press")
+		self.running = False
 
 	def right_btn(self, ctx):
+		print("RIGHT_BTN pressed")
 		if not self.running:
+			self.running = True
 			self.menuContext.select()
+			print("Finished processing button press")
+			self.running = 2
+			print("Starting button timeout")
 
 	def updateProgressBar(self, percent, x=15, y=15):
 		height = 10
@@ -375,9 +379,25 @@ class Bartender(MenuDelegate):
 	def run(self):
 		self.startInterrupts()
 		# main loop
-		try:  
-			while True:
-				time.sleep(0.1)
+		try:
+
+			try: 
+
+				while True:
+					letter = raw_input(">")
+					if letter == "l":
+						self.left_btn(False)
+					if letter == "r":
+						self.right_btn(False)
+
+			except EOFError:
+				while True:
+					time.sleep(0.1)
+					if self.running not in (True,False):
+						self.running -= 0.1
+						if self.running == 0:
+							self.running = False
+							print("Finished button timeout")
 		  
 		except KeyboardInterrupt:  
 			GPIO.cleanup()       # clean up GPIO on CTRL+C exit  
@@ -389,3 +409,7 @@ class Bartender(MenuDelegate):
 bartender = Bartender()
 bartender.buildMenu(drink_list, drink_options)
 bartender.run()
+
+
+
+

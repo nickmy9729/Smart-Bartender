@@ -6,6 +6,7 @@ import sys
 import RPi.GPIO as GPIO
 import json
 import traceback
+import threading
 
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306

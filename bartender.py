@@ -151,7 +151,7 @@ class Bartender(MenuDelegate):
 		# add pump menus to the configuration menu
 		configuration_menu.addOptions(pump_opts)
 		# add a back button to the configuration menu
-		configuration_menu.addOption(Back("Zurück"))
+		configuration_menu.addOption(Back("Back"))
 		# adds an option that cleans all pumps to the configuration menu
 		configuration_menu.addOption(MenuItem('clean', 'Clean'))
 		configuration_menu.setParent(m)

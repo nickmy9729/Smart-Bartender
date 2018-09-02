@@ -1,12 +1,15 @@
 # Modified Version 
 
+Since i have Buttons with a Red LED i did a StandBy light that is Red...
+https://imgur.com/a/V2bNtEk
+
 - changed the Font and made it bigger
 
 - set a Default StandBy Light to Red
 
 - Changed some Pins
 
-- Drinklist by Danzibob
+- added the Drinklist by Danzibob
 
 ------------------------------------------------------------------------------------
 # Smart Bartender with Adafruit SSD1306

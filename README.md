@@ -1,8 +1,12 @@
-Modified Version 
+# Modified Version 
 
--changed the Font and made it bigger
--set a Default StandBy Light to Red
--Changed some Pins
+- changed the Font and made it bigger
+
+- set a Default StandBy Light to Red
+
+- Changed some Pins
+
+- Drinklist by Danzibob
 
 ------------------------------------------------------------------------------------
 # Smart Bartender with Adafruit SSD1306

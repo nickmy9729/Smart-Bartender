@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
-
 import time
 import sys
 import RPi.GPIO as GPIO
@@ -25,20 +22,23 @@ SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 64
 
 LEFT_BTN_PIN = 13
-LEFT_PIN_BOUNCE = 200
+LEFT_PIN_BOUNCE = 300
 
 RIGHT_BTN_PIN = 5
-RIGHT_PIN_BOUNCE = 200
+RIGHT_PIN_BOUNCE = 300
 
 OLED_RESET_PIN = 15
 OLED_DC_PIN = 16
 
-NUMBER_NEOPIXELS = 45
-NEOPIXEL_DATA_PIN = 26
-NEOPIXEL_CLOCK_PIN = 6
+NUMBER_NEOPIXELS = 23
+#I use other Pins here, Default is 26
+NEOPIXEL_DATA_PIN = 21
+#I use other Pins here, Default is 6
+NEOPIXEL_CLOCK_PIN = 20
 NEOPIXEL_BRIGHTNESS = 64
 
-FLOW_RATE = 60.0/1500.0
+#Higher numers at Flow rate = lower flot Rate at the Pumps , i use this here fpr 100ml/min pumps with 2mm/4mm tubes
+FLOW_RATE = 1.31
 
 # Raspberry Pi pin configuration:
 RST = 14

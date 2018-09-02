@@ -83,7 +83,7 @@ class Bartender(MenuDelegate):
 		self.image = Image.new('1', (self.screen_width, self.screen_height))
 
 		# Load default font.
-		self.font = ImageFont.load_default()
+		self.font = ImageFont.truetype("FreeMono.ttf", 15)
 
 		# Create drawing object.
 		self.draw = ImageDraw.Draw(self.image)

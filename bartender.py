@@ -103,9 +103,9 @@ class Bartender(MenuDelegate):
 		self.strip.begin()           # Initialize pins for output
 		self.strip.setBrightness(NEOPIXEL_BRIGHTNESS) # Limit brightness to ~1/4 duty cycle
 
-		# turn everything off
+		# Set the Default or "StandBy Light" to Red in this case
 		for i in range(0, self.numpixels):
-			self.strip.setPixelColor(i, 0)
+			self.strip.setPixelColor(i, 0x00FF00)
 		self.strip.show() 
 
 		print "Done initializing"
@@ -276,11 +276,11 @@ class Bartender(MenuDelegate):
 			self.strip.setPixelColor(i, 0xFF0000)
 		self.strip.show()
 
-		time.sleep(5)
+		time.sleep(7)
 
-		# turn lights off
+		# set them back to red "StandBy Light"
 		for i in range(0, self.numpixels):
-			self.strip.setPixelColor(i, 0)
+			self.strip.setPixelColor(i, 0x00FF00)
 		self.strip.show() 
 
 	def pour(self, pin, waitTime):

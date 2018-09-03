@@ -228,7 +228,7 @@ class Bartender(MenuDelegate):
 			thread.start()
 
 		# start the progress bar
-		self.progressBar(waitTime)
+###		self.progressBar(waitTime)
 
 		# wait for threads to finish
 		for thread in pumpThreads:
@@ -288,15 +288,15 @@ class Bartender(MenuDelegate):
 		time.sleep(waitTime)
 		GPIO.output(pin, GPIO.HIGH)
 
-	def progressBar(self, waitTime):
-		interval = waitTime / 100.0
-		for x in range(1, 101):
-			self.led.clear()
-			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
-			self.updateProgressBar(x, y=35)
-			self.led.image(self.image)
-			self.led.display()
-			time.sleep(interval)
+#	def progressBar(self, waitTime):
+#		interval = waitTime / 100.0
+#		for x in range(1, 101):
+#			self.led.clear()
+#			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
+#			self.updateProgressBar(x, y=35)
+#			self.led.image(self.image)
+#			self.led.display()
+#			time.sleep(interval)
 
 	def makeDrink(self, drink, ingredients):
 		# cancel any button presses while the drink is being made
@@ -324,7 +324,7 @@ class Bartender(MenuDelegate):
 			thread.start()
 
 		# start the progress bar
-		self.progressBar(maxTime)
+	###	self.progressBar(maxTime)
 
 		# wait for threads to finish
 		for thread in pumpThreads:
@@ -364,18 +364,18 @@ class Bartender(MenuDelegate):
 			self.running = 2
 			print("Starting button timeout")
 
-	def updateProgressBar(self, percent, x=15, y=15):
-		height = 10
-		width = self.screen_width-2*x
-		for w in range(0, width):
-			self.draw.point((w + x, y), fill=255)
-			self.draw.point((w + x, y + height), fill=255)
-		for h in range(0, height):
-			self.draw.point((x, h + y), fill=255)
-			self.draw.point((self.screen_width-x, h + y), fill=255)
-			for p in range(0, percent):
-				p_loc = int(p/100.0*width)
-				self.draw.point((x + p_loc, h + y), fill=255)
+#	def updateProgressBar(self, percent, x=15, y=15):
+#		height = 10
+#		width = self.screen_width-2*x
+#		for w in range(0, width):
+#			self.draw.point((w + x, y), fill=255)
+#			self.draw.point((w + x, y + height), fill=255)
+#		for h in range(0, height):
+#			self.draw.point((x, h + y), fill=255)
+#			self.draw.point((self.screen_width-x, h + y), fill=255)
+#			for p in range(0, percent):
+#				p_loc = int(p/100.0*width)
+#				self.draw.point((x + p_loc, h + y), fill=255)
 
 	def run(self):
 		self.startInterrupts()
@@ -405,7 +405,6 @@ class Bartender(MenuDelegate):
 		GPIO.cleanup()           # clean up GPIO on normal exit 
 
 		traceback.print_exc()
-
 
 bartender = Bartender()
 bartender.buildMenu(drink_list, drink_options)

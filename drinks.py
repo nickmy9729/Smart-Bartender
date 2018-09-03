@@ -16,6 +16,12 @@ drink_list = [{
 		},
 	},
 	{
+		'name': 'TEST',
+		'ingredients': {
+			'vodka': 10.0
+		},
+	},
+	{
 		'name': 'Negroni',
 		'ingredients': {
 			'gin': 30,

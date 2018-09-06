@@ -13,6 +13,8 @@ https://imgur.com/a/V2bNtEk
 
 - Fixed ProgressBar (Yogesh)
 
+- FlowRate can be set for each pump
+
 ------------------------------------------------------------------------------------
 # Smart Bartender with Adafruit SSD1306
 Make sure the following are installed:

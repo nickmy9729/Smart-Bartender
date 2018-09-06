@@ -287,18 +287,17 @@ class Bartender(MenuDelegate):
 
 		# other way of dealing with Display delay, Thanks Yogesh
 	def progressBar(self, waitTime):
+		#-with the outcommented version, it updates faster, but there is a limit with the delay, you have to figure out-#
 		#mWaitTime = waitTime - 7
-		interval = waitTime / 10.0
+		#interval = mWaitTime/ 100.0
 		#if interval < 0.07:
 		#	interval = 0
-		##another way to deal with the delay##
-		#interval = waitTime / 100.0
-		#if interval > 0.3:
-		#	interval == interval - 0.03
-		#for x in range(1, 101):
+		#for x in range(1, 101):	
+		interval = waitTime / 10.0
 		for x in range(1, 11):
 			self.led.clear()
 			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
+		#	self.updateProgressBar(x, y=35)
 			self.updateProgressBar(x*10, y=35)
 			self.led.image(self.image)
 			self.led.display()

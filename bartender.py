@@ -37,9 +37,6 @@ NEOPIXEL_DATA_PIN = 21
 NEOPIXEL_CLOCK_PIN = 20
 NEOPIXEL_BRIGHTNESS = 64
 
-#Higher numers at Flow rate = lower flot Rate at the Pumps , i use this here fpr 100ml/min pumps with 2mm/4mm tubes
-FLOW_RATE = 1.31
-
 # Raspberry Pi pin configuration:
 RST = 14
 # Note the following are only used with SPI:
@@ -294,6 +291,11 @@ class Bartender(MenuDelegate):
 		interval = waitTime / 10.0
 		#if interval < 0.07:
 		#	interval = 0
+		##another way to deal with the delay##
+		#interval = waitTime / 100.0
+		#if interval > 0.3:
+		#	interval == interval - 0.03
+		#for x in range(1, 101):
 		for x in range(1, 11):
 			self.led.clear()
 			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
@@ -313,21 +315,22 @@ class Bartender(MenuDelegate):
 
 		# Parse the drink ingredients and spawn threads for pumps
 		maxTime = 0
-		pumpThreads = []
+		pumpThreads = []			
 		for ing in ingredients.keys():
 			for pump in self.pump_configuration.keys():
 				if ing == self.pump_configuration[pump]["value"]:
-					waitTime = ingredients[ing] * FLOW_RATE
+					vWaitTime = self.pump_configuration[pump]["flowrate"]
+					waitTime = ingredients[ing] * vWaitTime
 					if (waitTime > maxTime):
 						maxTime = waitTime
 					pump_t = threading.Thread(target=self.pour, args=(self.pump_configuration[pump]["pin"], waitTime))
 					pumpThreads.append(pump_t)
-
+					
 		# start the pump threads
 		for thread in pumpThreads:
 			thread.start()
-		print(maxTime)
-		print(waitTime)
+		#Show in Console how long the Pumps running	
+		print("The pumps run for" ,maxTime,"seconds")
 		# start the progress bar
 		self.progressBar(maxTime)
 

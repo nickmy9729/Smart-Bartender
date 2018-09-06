@@ -228,7 +228,7 @@ class Bartender(MenuDelegate):
 			thread.start()
 
 		# start the progress bar
-###		self.progressBar(waitTime)
+		self.progressBar(waitTime)
 
 		# wait for threads to finish
 		for thread in pumpThreads:
@@ -276,7 +276,7 @@ class Bartender(MenuDelegate):
 			self.strip.setPixelColor(i, 0xFF0000)
 		self.strip.show()
 
-		time.sleep(7)
+		time.sleep(5)
 
 		# set them back to red "StandBy Light"
 		for i in range(0, self.numpixels):
@@ -288,15 +288,19 @@ class Bartender(MenuDelegate):
 		time.sleep(waitTime)
 		GPIO.output(pin, GPIO.HIGH)
 
-#	def progressBar(self, waitTime):
-#		interval = waitTime / 100.0
-#		for x in range(1, 101):
-#			self.led.clear()
-#			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
-#			self.updateProgressBar(x, y=35)
-#			self.led.image(self.image)
-#			self.led.display()
-#			time.sleep(interval)
+		# other way of dealing with Display delay, Thanks Yogesh
+	def progressBar(self, waitTime):
+		#mWaitTime = waitTime - 7
+		interval = waitTime / 10.0
+		#if interval < 0.07:
+		#	interval = 0
+		for x in range(1, 11):
+			self.led.clear()
+			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
+			self.updateProgressBar(x*10, y=35)
+			self.led.image(self.image)
+			self.led.display()
+			time.sleep(interval)
 
 	def makeDrink(self, drink, ingredients):
 		# cancel any button presses while the drink is being made
@@ -322,9 +326,10 @@ class Bartender(MenuDelegate):
 		# start the pump threads
 		for thread in pumpThreads:
 			thread.start()
-
+		print(maxTime)
+		print(waitTime)
 		# start the progress bar
-	###	self.progressBar(maxTime)
+		self.progressBar(maxTime)
 
 		# wait for threads to finish
 		for thread in pumpThreads:
@@ -336,7 +341,7 @@ class Bartender(MenuDelegate):
 		# stop the light thread
 		lightsThread.do_run = False
 		lightsThread.join()
-
+		
 		# show the ending sequence lights
 		self.lightsEndingSequence()
 
@@ -364,18 +369,18 @@ class Bartender(MenuDelegate):
 			self.running = 2
 			print("Starting button timeout")
 
-#	def updateProgressBar(self, percent, x=15, y=15):
-#		height = 10
-#		width = self.screen_width-2*x
-#		for w in range(0, width):
-#			self.draw.point((w + x, y), fill=255)
-#			self.draw.point((w + x, y + height), fill=255)
-#		for h in range(0, height):
-#			self.draw.point((x, h + y), fill=255)
-#			self.draw.point((self.screen_width-x, h + y), fill=255)
-#			for p in range(0, percent):
-#				p_loc = int(p/100.0*width)
-#				self.draw.point((x + p_loc, h + y), fill=255)
+	def updateProgressBar(self, percent, x=15, y=15):
+		height = 10
+		width = self.screen_width-2*x
+		for w in range(0, width):
+			self.draw.point((w + x, y), fill=255)
+			self.draw.point((w + x, y + height), fill=255)
+		for h in range(0, height):
+			self.draw.point((x, h + y), fill=255)
+			self.draw.point((self.screen_width-x, h + y), fill=255)
+			for p in range(0, percent):
+				p_loc = int(p/100.0*width)
+				self.draw.point((x + p_loc, h + y), fill=255)
 
 	def run(self):
 		self.startInterrupts()
@@ -409,7 +414,3 @@ class Bartender(MenuDelegate):
 bartender = Bartender()
 bartender.buildMenu(drink_list, drink_options)
 bartender.run()
-
-
-
-

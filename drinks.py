@@ -6,6 +6,11 @@ drink_list = [{
 			'vodka': 15.0,
 			'vermouth': 7.5
 		},
+	        'steps': [
+			{ 'pour': ['gin', 'vodka', 'vermouth'] },
+			{ 'manual_step': 'Strain into a chilled cocktail glass.' },
+			{ 'manual_step': 'Twist a slice of lemon peel over the drink, rub along the rim of the glass, and drop it in.' }
+		]
 	},
 	{
 		'name': 'Bacardi',
@@ -14,12 +19,11 @@ drink_list = [{
 			'lij': 20,
 			'grenadine': 10
 		},
-	},
-	{
-		'name': 'TEST',
-		'ingredients': {
-			'vodka': 10.0
-		},
+		'steps': [
+			{ 'manual_step': 'Place ice in shaker'},
+			{ 'pour': ['whiteRum', 'lij', 'grenadine'] },
+			{ 'manual_step': 'Strain into the chilled coupe.'}
+		]
 	},
 	{
 		'name': 'Negroni',

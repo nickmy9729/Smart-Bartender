@@ -1,22 +1,23 @@
+import pprint
 import time
 import sys
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import json
 import traceback
 import threading
 
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_SSD1306
+#import Adafruit_GPIO.SPI as SPI
+#import Adafruit_SSD1306
 
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-from dotstar import Adafruit_DotStar
-from menu import MenuItem, Menu, Back, MenuContext, MenuDelegate
+#from dotstar import Adafruit_DotStar
 from drinks import drink_list, drink_options
+from glasses import glasses
 
-GPIO.setmode(GPIO.BCM)
+#GPIO.setmode(GPIO.BCM)
 
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 64
@@ -44,8 +45,14 @@ DC = 15
 SPI_PORT = 0
 SPI_DEVICE = 0
 
+class MenuItem(object):
+        def __init__(self, type, name, attributes = None, visible = True):
+                self.type = type
+                self.name = name
+                self.attributes = attributes
+                self.visible = visible
 
-class Bartender(MenuDelegate): 
+class Bartender: 
 	def __init__(self):
 		self.running = False
 
@@ -53,26 +60,19 @@ class Bartender(MenuDelegate):
 		self.screen_width = SCREEN_WIDTH
 		self.screen_height = SCREEN_HEIGHT
 
-		self.btn1Pin = LEFT_BTN_PIN
-		self.btn2Pin = RIGHT_BTN_PIN
-	 
-	 	# configure interrups for buttons
-	 	GPIO.setup(self.btn1Pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(self.btn2Pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  
-
 		# configure screen
 		spi_bus = 0
 		spi_device = 0
 
 		# Very important... This lets py-gaugette 'know' what pins to use in order to reset the display
-		self.led = disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, dc=DC, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE, max_speed_hz=8000000)) # Change rows & cols values depending on your display dimensions.
+		#self.led = disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, dc=DC, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE, max_speed_hz=8000000)) # Change rows & cols values depending on your display dimensions.
 		
 		# Initialize library.
-		self.led.begin()
+		#self.led.begin()
 
 		# Clear display.
-		self.led.clear()
-		self.led.display()
+		#self.led.clear()
+		#self.led.display()
 
 
 		# Create image buffer.
@@ -87,8 +87,9 @@ class Bartender(MenuDelegate):
 
 		# load the pump configuration from file
 		self.pump_configuration = Bartender.readPumpConfiguration()
-		for pump in self.pump_configuration.keys():
-			GPIO.setup(self.pump_configuration[pump]["pin"], GPIO.OUT, initial=GPIO.HIGH)
+		for pump in list(self.pump_configuration.keys()):
+                        pass
+			#GPIO.setup(self.pump_configuration[pump]["pin"], GPIO.OUT, initial=GPIO.HIGH)
 
 		# setup pixels:
 		self.numpixels = NUMBER_NEOPIXELS # Number of LEDs in strip
@@ -96,16 +97,16 @@ class Bartender(MenuDelegate):
 		# Here's how to control the strip from any two GPIO pins:
 		datapin  = NEOPIXEL_DATA_PIN
 		clockpin = NEOPIXEL_CLOCK_PIN
-		self.strip = Adafruit_DotStar(self.numpixels, datapin, clockpin)
-		self.strip.begin()           # Initialize pins for output
-		self.strip.setBrightness(NEOPIXEL_BRIGHTNESS) # Limit brightness to ~1/4 duty cycle
+		#self.strip = Adafruit_DotStar(self.numpixels, datapin, clockpin)
+		#self.strip.begin()           # Initialize pins for output
+		#self.strip.setBrightness(NEOPIXEL_BRIGHTNESS) # Limit brightness to ~1/4 duty cycle
 
 		# Set the Default or "StandBy Light" to Red in this case
-		for i in range(0, self.numpixels):
-			self.strip.setPixelColor(i, 0x00FF00)
-		self.strip.show() 
+		#for i in range(0, self.numpixels):
+			#self.strip.setPixelColor(i, 0x00FF00)
+		#self.strip.show() 
 
-		print "Done initializing"
+		print("Done initializing")
 
 	@staticmethod
 	def readPumpConfiguration():
@@ -116,97 +117,89 @@ class Bartender(MenuDelegate):
 		with open("pump_config.json", "w") as jsonFile:
 			json.dump(configuration, jsonFile)
 
-	def startInterrupts(self):
-		GPIO.add_event_detect(self.btn1Pin, GPIO.FALLING, callback=self.left_btn, bouncetime=LEFT_PIN_BOUNCE)  
-		GPIO.add_event_detect(self.btn2Pin, GPIO.FALLING, callback=self.right_btn, bouncetime=RIGHT_PIN_BOUNCE)  
-
-	def buildMenu(self, drink_list, drink_options):
-		# create a new main menu
-		m = Menu("Main Menu")
-
-		# add drink options
-		drink_opts = []
-		for d in drink_list:
-			drink_opts.append(MenuItem('drink', d["name"], {"ingredients": d["ingredients"]}))
-
-		configuration_menu = Menu("Configure")
-
-		# add pump configuration options
-		pump_opts = []
-		for p in sorted(self.pump_configuration.keys()):
-			config = Menu(self.pump_configuration[p]["name"])
-			# add fluid options for each pump
-			for opt in drink_options:
-				# star the selected option
-				selected = "*" if opt["value"] == self.pump_configuration[p]["value"] else ""
-				config.addOption(MenuItem('pump_selection', opt["name"], {"key": p, "value": opt["value"], "name": opt["name"]}))
-			# add a back button so the user can return without modifying
-			config.addOption(Back("Back"))
-			config.setParent(configuration_menu)
-			pump_opts.append(config)
-
-		# add pump menus to the configuration menu
-		configuration_menu.addOptions(pump_opts)
-		# add a back button to the configuration menu
-		configuration_menu.addOption(Back("Back"))
-		# adds an option that cleans all pumps to the configuration menu
-		configuration_menu.addOption(MenuItem('clean', 'Clean'))
-		configuration_menu.setParent(m)
-
-		m.addOptions(drink_opts)
-		m.addOption(configuration_menu)
-		# create a menu context
-		self.menuContext = MenuContext(m, self)
-
 	def filterDrinks(self, menu):
-		"""
-		Removes any drinks that can't be handled by the pump configuration
-		"""
-		for i in menu.options:
-			if (i.type == "drink"):
-				i.visible = False
-				ingredients = i.attributes["ingredients"]
-				presentIng = 0
-				for ing in ingredients.keys():
-					for p in self.pump_configuration.keys():
-						if (ing == self.pump_configuration[p]["value"]):
-							presentIng += 1
-				if (presentIng == len(ingredients.keys())): 
-					i.visible = True
-			elif (i.type == "menu"):
-				self.filterDrinks(i)
+            """
+                Removes any drinks that can't be handled by the current pump configuration
+            """
+            drinks = []
+            for d in drink_list:
+                attributes = {}
+                new_ingredients = {}
+                ratio = list(d['ingredients'].values())
+                print(ratio)
+                my_gcd = self.calcGCD(ratio)
+                for i in d['ingredients']:
+                     d['ingredients'][i] = round(float(d['ingredients'][i] / my_gcd))
+                for i in d:
+                    attributes[i] = d[i]
+                drinks.append(MenuItem('drink', d["name"], attributes))
 
-	def selectConfigurations(self, menu):
-		"""
-		Adds a selection star to the pump configuration option
-		"""
-		for i in menu.options:
-			if (i.type == "pump_selection"):
-				key = i.attributes["key"]
-				if (self.pump_configuration[key]["value"] == i.attributes["value"]):
-					i.name = "%s %s" % (i.attributes["name"], "*")
-				else:
-					i.name = i.attributes["name"]
-			elif (i.type == "menu"):
-				self.selectConfigurations(i)
+            n = 0
+            k = 0
+            for drink in drinks:
+                ingredients = 0
+                num_ingredients = len(drink.attributes['ingredients'])
+                for ingredient in drink.attributes["ingredients"]:
+                    for pump in sorted(self.pump_configuration):
+                        if self.pump_configuration[pump]['value'] == ingredient:
+                            ingredients += 1
+                if ingredients == num_ingredients:
+                    drink.visible = True
+            return drinks
 
-	def prepareForRender(self, menu):
-		self.filterDrinks(menu)
-		self.selectConfigurations(menu)
-		return True
+	def calcGCD(self, my_list):
+		result = my_list[0]
+		for x in my_list[1:]:
+			if result < x:
+				temp = result
+				result = x
+				x = temp
+			while x != 0:
+				temp = x
+				x = result % x
+				result = temp
+		return result 
 
-	def menuItemClicked(self, menuItem):
-		if (menuItem.type == "drink"):
-			self.makeDrink(menuItem.name, menuItem.attributes["ingredients"])
-			return True
-		elif(menuItem.type == "pump_selection"):
-			self.pump_configuration[menuItem.attributes["key"]]["value"] = menuItem.attributes["value"]
-			Bartender.writePumpConfiguration(self.pump_configuration)
-			return True
-		elif(menuItem.type == "clean"):
-			self.clean()
-			return True
-		return False
+	def dispenseByRecGlass(self, drink):
+		glassMLS = glasses[drink['recommended_glass']]['size']
+		if drink['ice']:
+			glassMLS = round(float(glasses[drink['recommended_glass']]['size']) * .7)
+		return dispenseAmount(drink, glassMLS)
+
+	def dispenseAmount(self, drink, sizeML):
+		smallest_ratio = 0
+		ing = {}
+		for ingredient in drink['ingredients']:
+			smallest_ratio =  smallest_ratio + (1 * drink['ingredients'][ingredient])
+		multiple = sizeML / smallest_ratio
+		for ingredient in drink['ingredients']:
+			mls = round(drink['ingredients'][ingredient] * multiple)
+			ing[ingredient] = mls
+		return ing
+
+	def calculateDrinkSize(self, drink, taste=0):
+		standard_drink_grams = 14
+		total_grams = 0
+		ing = {}
+		for ingredient in drink['ingredients']:
+			gramsperml = calculateAlcoholGrams(ingredient)
+			ingredientgrams = gramsperml * drink['ingredients'][ingredient]
+			total_grams = ingredientgrams + total_grams
+		multiple = standard_drink_grams / total_grams
+		if taste == 1:
+			multiple = 1
+		for ingredient in drink['ingredients']:
+			mls = round(drink['ingredients'][ingredient] * multiple)
+			ing[ingredient] = mls
+		return ing
+
+	def calculateAlcoholGrams(self, ingredient):
+		grams = None
+		if ingredient in ingredients:
+			volume = 1 #in milliliter
+			abv = float(ingredients[ingredient]['abv']) / 100
+			grams = float(abv * .789)
+			return grams
 
 	def clean(self):
 		waitTime = 20
@@ -216,7 +209,7 @@ class Bartender(MenuDelegate):
 		# self.stopInterrupts()
 		self.running = True
 
-		for pump in self.pump_configuration.keys():
+		for pump in list(self.pump_configuration.keys()):
 			pump_t = threading.Thread(target=self.pour, args=(self.pump_configuration[pump]["pin"], waitTime))
 			pumpThreads.append(pump_t)
 
@@ -238,14 +231,6 @@ class Bartender(MenuDelegate):
 		time.sleep(2);
 
 
-	def displayMenuItem(self, menuItem):
-		print menuItem.name
-		self.led.clear()
-		self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
-		self.draw.text((0,20),str(menuItem.name), font=self.font, fill=255)
-		self.led.image(self.image)
-		self.led.display()
-
 	def cycleLights(self):
 		t = threading.currentThread()
 		head  = 0               # Index of first 'on' pixel
@@ -253,9 +238,9 @@ class Bartender(MenuDelegate):
 		color = 0xFF0000        # 'On' color (starts red)
 
 		while getattr(t, "do_run", True):
-			self.strip.setPixelColor(head, color) # Turn on 'head' pixel
-			self.strip.setPixelColor(tail, 0)     # Turn off 'tail'
-			self.strip.show()                     # Refresh strip
+			#self.strip.setPixelColor(head, color) # Turn on 'head' pixel
+			#self.strip.setPixelColor(tail, 0)     # Turn off 'tail'
+			#self.strip.show()                     # Refresh strip
 			time.sleep(1.0 / 50)             # Pause 20 milliseconds (~50 fps)
 
 			head += 1                        # Advance head position
@@ -269,23 +254,24 @@ class Bartender(MenuDelegate):
 
 	def lightsEndingSequence(self):
 		# make lights green
-		for i in range(0, self.numpixels):
-			self.strip.setPixelColor(i, 0xFF0000)
-		self.strip.show()
+		#for i in range(0, self.numpixels):
+			#self.strip.setPixelColor(i, 0xFF0000)
+		#self.strip.show()
 
 		time.sleep(5)
 
 		# set them back to red "StandBy Light"
-		for i in range(0, self.numpixels):
-			self.strip.setPixelColor(i, 0x00FF00)
-		self.strip.show() 
+		#for i in range(0, self.numpixels):
+			#self.strip.setPixelColor(i, 0x00FF00)
+		#self.strip.show() 
 
 	def pour(self, pin, waitTime):
-		GPIO.output(pin, GPIO.LOW)
+		pass
+		#GPIO.output(pin, GPIO.LOW)
 		time.sleep(waitTime)
-		GPIO.output(pin, GPIO.HIGH)
-
+		#GPIO.output(pin, GPIO.HIGH)
 		# other way of dealing with Display delay, Thanks Yogesh
+
 	def progressBar(self, waitTime):
 		#-with the outcommented version, it updates faster, but there is a limit with the delay, you have to figure out-#
 		#mWaitTime = waitTime - 7
@@ -295,32 +281,37 @@ class Bartender(MenuDelegate):
 		#for x in range(1, 101):	
 		interval = waitTime / 10.0
 		for x in range(1, 11):
-			self.led.clear()
+			#self.led.clear()
 			self.draw.rectangle((0,0,self.screen_width,self.screen_height), outline=0, fill=0)
 		#	self.updateProgressBar(x, y=35)
 			self.updateProgressBar(x*10, y=35)
-			self.led.image(self.image)
-			self.led.display()
+			#self.led.image(self.image)
+			#self.led.display()
 			time.sleep(interval)
 
-	def makeDrink(self, drink, ingredients):
+        #
+        # ingredients = {
+        #        'vodka': 300,
+        #        'oj': 200
+        # }
+	def pourIngredients(self, ingredients):
 		# cancel any button presses while the drink is being made
 		# self.stopInterrupts()
 		self.running = True
 
 		# launch a thread to control lighting
-		lightsThread = threading.Thread(target=self.cycleLights)
-		lightsThread.start()
+		#lightsThread = threading.Thread(target=self.cycleLights)
+		#lightsThread.start()
 
 		# Parse the drink ingredients and spawn threads for pumps
 		maxTime = 0
 		pumpThreads = []			
-		for ing in ingredients.keys():
-			for pump in self.pump_configuration.keys():
+		for ing in list(ingredients):
+			for pump in list(self.pump_configuration.keys()):
 				if ing == self.pump_configuration[pump]["value"]:
-					vWaitTime = self.pump_configuration[pump]["flowrate"]
-					waitTime = ingredients[ing] * vWaitTime
-					if (waitTime > maxTime):
+					mlPMin = self.pump_configuration[pump]["flowrate"]
+					waitTime = float(ingredients['ing'] / float(mlPMin / 60))
+					if waitTime > maxTime:
 						maxTime = waitTime
 					pump_t = threading.Thread(target=self.pour, args=(self.pump_configuration[pump]["pin"], waitTime))
 					pumpThreads.append(pump_t)
@@ -329,90 +320,22 @@ class Bartender(MenuDelegate):
 		for thread in pumpThreads:
 			thread.start()
 		#Show in Console how long the Pumps running	
-		print("The pumps run for" ,maxTime,"seconds")
-		# start the progress bar
-		self.progressBar(maxTime)
+		print(("The pumps run for" ,maxTime,"seconds"))
 
 		# wait for threads to finish
 		for thread in pumpThreads:
 			thread.join()
 
-		# show the main menu
-		self.menuContext.showMenu()
-
 		# stop the light thread
-		lightsThread.do_run = False
-		lightsThread.join()
+		#lightsThread.do_run = False
+		#lightsThread.join()
 		
 		# show the ending sequence lights
-		self.lightsEndingSequence()
+		#self.lightsEndingSequence()
 
 		# sleep for a couple seconds to make sure the interrupts don't get triggered
-		time.sleep(2);
+		#time.sleep(2);
 
 		# reenable interrupts
 		# self.startInterrupts()
 		self.running = False
-
-	def left_btn(self, ctx):
-		print("LEFT_BTN pressed")
-		if not self.running:
-			self.running = True
-			self.menuContext.advance()
-			print("Finished processing button press")
-		self.running = False
-
-	def right_btn(self, ctx):
-		print("RIGHT_BTN pressed")
-		if not self.running:
-			self.running = True
-			self.menuContext.select()
-			print("Finished processing button press")
-			self.running = 2
-			print("Starting button timeout")
-
-	def updateProgressBar(self, percent, x=15, y=15):
-		height = 10
-		width = self.screen_width-2*x
-		for w in range(0, width):
-			self.draw.point((w + x, y), fill=255)
-			self.draw.point((w + x, y + height), fill=255)
-		for h in range(0, height):
-			self.draw.point((x, h + y), fill=255)
-			self.draw.point((self.screen_width-x, h + y), fill=255)
-			for p in range(0, percent):
-				p_loc = int(p/100.0*width)
-				self.draw.point((x + p_loc, h + y), fill=255)
-
-	def run(self):
-		self.startInterrupts()
-		# main loop
-		try:
-
-			try: 
-
-				while True:
-					letter = raw_input(">")
-					if letter == "l":
-						self.left_btn(False)
-					if letter == "r":
-						self.right_btn(False)
-
-			except EOFError:
-				while True:
-					time.sleep(0.1)
-					if self.running not in (True,False):
-						self.running -= 0.1
-						if self.running == 0:
-							self.running = False
-							print("Finished button timeout")
-		  
-		except KeyboardInterrupt:  
-			GPIO.cleanup()       # clean up GPIO on CTRL+C exit  
-		GPIO.cleanup()           # clean up GPIO on normal exit 
-
-		traceback.print_exc()
-
-bartender = Bartender()
-bartender.buildMenu(drink_list, drink_options)
-bartender.run()
